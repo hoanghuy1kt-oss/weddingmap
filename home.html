@@ -38,7 +38,7 @@
         h1, .wedding-font { font-family: 'Playfair Display', serif; }
         .handwriting { font-family: 'Great Vibes', cursive; }
 
-        /* Responsive: điện thoại */
+        /* Responsive: CHỈ mobile (≤640px) — desktop giữ nguyên như cũ */
         @media (max-width: 640px) {
             body { font-size: 15px; }
             header .header-title { font-size: 1.5rem !important; }
@@ -176,7 +176,7 @@
         </svg>
     </button>
 
-    <!-- Header -->
+    <!-- Header — desktop như cũ, mobile tối ưu trong @media -->
     <header class="w-full text-center py-6 sm:py-8 px-4">
         <p class="text-[10px] uppercase tracking-[0.3em] mb-2" style="color: #A59573;">Trân trọng kính mời tới dự</p>
         <h1 class="wedding-font text-xl sm:text-2xl font-light uppercase tracking-[0.2em] header-title" style="color: #2C3135;">Lễ Thành Hôn</h1>
@@ -185,10 +185,10 @@
             <svg class="w-4 h-4 opacity-70 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" xmlns="http://www.w3.org/2000/svg" style="color: #C5A059;"><path d="M12 2l2.4 7.4h7.6l-6 4.6 2.3 7.4-6-4.6-6 4.6 2.3-7.4-6-4.6h7.6z"/></svg>
             <span class="flex-1 max-w-[60px] sm:max-w-[80px] h-[1px] opacity-70" style="background-color: #C5A059;"></span>
         </div>
-        <h2 class="handwriting text-2xl sm:text-[3.5rem] mt-1 px-1 overflow-hidden text-ellipsis sm:whitespace-normal" style="color: #C5A059; text-shadow: 0 2px 8px rgba(0,0,0,0.08);">Huy Hoàng & Hoa Trần</h2>
+        <h2 class="handwriting text-4xl sm:text-[3.5rem] mt-1" style="color: #C5A059; text-shadow: 0 2px 8px rgba(0,0,0,0.08);">Huy Hoàng & Hoa Trần</h2>
     </header>
 
-    <!-- Khu vực Tìm kiếm -->
+    <!-- Khu vực Tìm kiếm — desktop max-w-md như cũ -->
     <section class="w-full max-w-md px-4 sm:px-6 mb-6 sm:mb-8 relative z-30 min-h-[140px]">
         
         <!-- STEP 1: Chọn Nhóm -->
@@ -232,7 +232,7 @@
         </div>
     </section>
 
-    <!-- Map Section -->
+    <!-- Map Section — desktop như cũ -->
     <section class="w-full px-3 sm:px-4 mb-8 sm:mb-10">
         <div class="map-container" id="mapContainer">
             <!-- Stage & Aisle -->
