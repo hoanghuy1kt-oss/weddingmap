@@ -8,8 +8,8 @@
     <link rel="icon" href="Logo.ico" type="image/x-icon">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fonts: Playfair (Tiêu đề), Great Vibes (Tên cưới), Inter (Văn bản) -->
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,300;0,600;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Fonts: Cormorant Garamond (wedding-font), Great Vibes (Tên cưới), Playfair (header), Inter (Văn bản) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Great+Vibes&family=Playfair+Display:ital,wght@0,300;0,600;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Firebase (chỉ dùng khi đã tạo firebase-config.js từ firebase-config.example.js) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
@@ -22,6 +22,7 @@
             --safe-right: env(safe-area-inset-right, 0px);
             --touch-min: 44px;
             --gold: #C5A059;
+            --gold-primary: #C5A059;
         }
         * { -webkit-tap-highlight-color: transparent; }
         body {
@@ -35,7 +36,7 @@
             padding-bottom: var(--safe-bottom);
             overflow-x: hidden;
         }
-        h1, .wedding-font { font-family: 'Playfair Display', serif; }
+        h1, .wedding-font { font-family: 'Cormorant Garamond', serif; }
         .handwriting { font-family: 'Great Vibes', cursive; }
 
         /* Responsive: CHỈ mobile (≤640px) — desktop giữ nguyên như cũ */
@@ -52,67 +53,155 @@
             .bar-area { font-size: 8px; }
         }
 
-        /* Sơ đồ */
+        /* Sơ đồ — viền mỏng vuông vức */
         .map-container {
             position: relative; width: 100%; max-width: 500px; aspect-ratio: 3 / 4;
-            margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb;
+            margin: 0 auto; background-color: #ffffff; border: 1px solid rgba(200, 169, 126, 0.4);
             box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-radius: 12px; overflow: hidden;
             touch-action: pan-x pan-y;
         }
 
-        /* Bàn tiệc - touch friendly */
+        /* Bàn tiệc: viền vàng, đổ bóng trong tạo cảm giác đĩa nổi 3D */
         .table-node {
-            position: absolute; width: 7%; min-width: 28px; min-height: 28px; aspect-ratio: 1 / 1; border-radius: 50%;
-            background-color: #ffffff; border: 1.5px solid #4b5563;
+            position: absolute; width: 7%; min-width: 28px; min-height: 28px; aspect-ratio: 1 / 1;
+            border-radius: 50%; background-color: #FFFFFF;
+            border: 1px solid rgba(200, 169, 126, 0.8);
+            box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 3px rgba(200, 169, 126, 0.2);
+            color: #4A453F; font-size: 11px; font-weight: 600;
             display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 600; color: #374151;
             transform: translate(-50%, -50%); cursor: pointer; transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .table-node:hover { background-color: #f3f4f6; transform: translate(-50%, -50%) scale(1.1); }
+        .table-node:hover { background-color: #faf8f5; transform: translate(-50%, -50%) scale(1.1); }
         @media (hover: none) {
-            .table-node:active { background-color: #f3f4f6; transform: translate(-50%, -50%) scale(1.08); }
-        }
-        
-        /* Bàn phát sáng */
-        .table-node.glow {
-            background-color: #fef08a; border-color: #eab308; color: #854d0e;
-            box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
-            animation: pulse-glow 1.5s infinite; z-index: 20;
-        }
-        @keyframes pulse-glow {
-            0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
-            70% { transform: translate(-50%, -50%) scale(1.15); box-shadow: 0 0 0 15px rgba(234, 179, 8, 0); }
-            100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
+            .table-node:active { background-color: #faf8f5; transform: translate(-50%, -50%) scale(1.08); }
         }
 
-        /* Kiến trúc sơ đồ */
+        /* Bàn phát sáng — nền vàng Champagne, chữ trắng, hiệu ứng "nhịp thở" */
+        .table-node.glow {
+            background-color: #C8A97E;
+            color: #FFFFFF;
+            border-color: transparent;
+            animation: pulse-luxury 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 20;
+        }
+        @keyframes pulse-luxury {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                box-shadow: 0 0 0 0 rgba(200, 169, 126, 0.7);
+            }
+            70% {
+                transform: translate(-50%, -50%) scale(1.15);
+                box-shadow: 0 0 0 15px rgba(200, 169, 126, 0);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                box-shadow: 0 0 0 0 rgba(200, 169, 126, 0);
+            }
+        }
+
+        /* Kiến trúc sơ đồ (Sân khấu) */
         .stage {
-            position: absolute; top: 5%; left: 50%; transform: translateX(-50%);
-            width: 50%; height: 8%; border: 1.5px solid #374151;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background-color: #fff; z-index: 10;
+            position: absolute;
+            top: 4%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 45%;
+            height: 7%;
+            border: 1px solid #E8DCCB;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            z-index: 10;
         }
         .aisle {
             position: absolute; top: 13%; bottom: 15%; left: 50%; transform: translateX(-50%);
-            width: 8%; border-left: 1.5px solid #374151; border-right: 1.5px solid #374151;
+            width: 8%;
+            border-left: 1px dashed rgba(200, 169, 126, 0.3);
+            border-right: 1px dashed rgba(200, 169, 126, 0.3);
             background-color: #fafafa;
         }
+        /* Khu vực Bar */
         .bar-area {
-            position: absolute; border: 1.5px solid #374151; background-color: #fff;
-            font-size: 9px; font-weight: bold; display: flex; align-items: center; justify-content: center;
-            width: 7%; height: 4%; transform: translate(-50%, -50%);
+            position: absolute;
+            border: 1px solid #E8DCCB;
+            background-color: transparent;
+            font-size: 8px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 7%;
+            height: 4%;
+            transform: translate(-50%, -50%);
+            letter-spacing: 1px;
+            color: var(--gold-primary);
         }
 
         /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+
+        /* Nút chọn nhóm khách — luxury style */
+        .luxury-border { border: 1px solid #E8DCCB; }
+        .luxury-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .luxury-btn:hover {
+            border-color: var(--gold-primary);
+            background-color: #FDFCF9;
+            box-shadow: 0 4px 15px rgba(197, 164, 126, 0.15);
+            transform: translateY(-2px);
+        }
+        @media (hover: none) {
+            .luxury-btn:active {
+                border-color: var(--gold-primary);
+                background-color: #FDFCF9;
+                box-shadow: 0 4px 15px rgba(197, 164, 126, 0.15);
+                transform: translateY(-1px);
+            }
+        }
         
-        /* List khách */
-        .guest-item { transition: background 0.2s; min-height: var(--touch-min); }
-        .guest-item:hover { background-color: #fef9c3; cursor: pointer; }
-        @media (hover: none) { .guest-item:active { background-color: #fef9c3; } }
+        /* List khách — trình bày như thiết kế, hover mượt */
+        .guest-list-panel {
+            background: #FFFFFF;
+            border: 1px solid #E8DCCB;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            overflow: hidden;
+            transition: box-shadow 0.3s ease;
+        }
+        .guest-search-wrap {
+            border: 1px solid #E8DCCB;
+            border-radius: 10px;
+            background: #FFFFFF;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .guest-search-wrap:focus-within {
+            border-color: #C8A97E;
+            box-shadow: 0 0 0 2px rgba(200, 169, 126, 0.2);
+        }
+        .guest-search-wrap input::placeholder {
+            color: #9E9385;
+        }
+        .guest-item {
+            min-height: var(--touch-min);
+            cursor: pointer;
+            transition: background-color 0.25s ease, box-shadow 0.25s ease;
+            border-bottom: 1px solid rgba(232, 220, 203, 0.6);
+        }
+        .guest-item:last-child { border-bottom: none; }
+        .guest-item:hover {
+            background-color: #F5F0E8;
+            box-shadow: inset 0 0 0 1px rgba(200, 169, 126, 0.08);
+        }
+        @media (hover: none) {
+            .guest-item:active {
+                background-color: #F5F0E8;
+            }
+        }
         
         /* Admin Tabs */
         .admin-tab-active { border-bottom: 2px solid #2563eb; color: #1d4ed8; font-weight: 600; }
@@ -195,36 +284,40 @@
         <div id="step1_GroupSelect" class="transition-all duration-300">
             <p class="text-center font-medium mb-4 text-sm uppercase tracking-wider" style="color: #8B7E66;">Bạn là khách mời của ai?</p>
             <div class="grid grid-cols-1 gap-3">
-                <button type="button" onclick="selectGroup('Chú Rể')" class="w-full py-4 sm:py-3 bg-white border border-gray-300 rounded-xl shadow-sm text-gray-700 font-medium hover:bg-yellow-50 hover:border-yellow-400 active:bg-yellow-100 transition flex justify-between items-center px-4 sm:px-6 min-h-[var(--touch-min)]">
-                    <span>Khách mời Chú Rể</span>
-                    <svg class="h-5 w-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                <button type="button" onclick="selectGroup('Chú Rể')" class="w-full py-4 bg-white luxury-border luxury-btn rounded-[16px] text-[#4A453F] flex justify-between items-center px-5 min-h-[var(--touch-min)]">
+                    <span class="tracking-wide text-[15px] font-medium ml-2">Khách mời Chú Rể</span>
+                    <svg class="h-4 w-4 text-[#C5A47E] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                 </button>
-                <button type="button" onclick="selectGroup('Cô Dâu')" class="w-full py-4 sm:py-3 bg-white border border-gray-300 rounded-xl shadow-sm text-gray-700 font-medium hover:bg-yellow-50 hover:border-yellow-400 active:bg-yellow-100 transition flex justify-between items-center px-4 sm:px-6 min-h-[var(--touch-min)]">
-                    <span>Khách mời Cô Dâu</span>
-                    <svg class="h-5 w-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                <button type="button" onclick="selectGroup('Cô Dâu')" class="w-full py-4 bg-white luxury-border luxury-btn rounded-[16px] text-[#4A453F] flex justify-between items-center px-5 min-h-[var(--touch-min)]">
+                    <span class="tracking-wide text-[15px] font-medium ml-2">Khách mời Cô Dâu</span>
+                    <svg class="h-4 w-4 text-[#C5A47E] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                 </button>
-                <button type="button" onclick="selectGroup('Mẹ Thủy')" class="w-full py-4 sm:py-3 bg-white border border-gray-300 rounded-xl shadow-sm text-gray-700 font-medium hover:bg-yellow-50 hover:border-yellow-400 active:bg-yellow-100 transition flex justify-between items-center px-4 sm:px-6 min-h-[var(--touch-min)]">
-                    <span>Khách mời Mẹ Thủy</span>
-                    <svg class="h-5 w-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                <button type="button" onclick="selectGroup('Mẹ Thủy')" class="w-full py-4 bg-white luxury-border luxury-btn rounded-[16px] text-[#4A453F] flex justify-between items-center px-5 min-h-[var(--touch-min)]">
+                    <span class="tracking-wide text-[15px] font-medium ml-2">Khách mời Mẹ Thủy</span>
+                    <svg class="h-4 w-4 text-[#C5A47E] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                 </button>
             </div>
         </div>
 
         <!-- STEP 2: Chọn Khách -->
         <div id="step2_GuestSelect" class="hidden transition-all duration-300">
-            <div class="flex items-center mb-3">
-                <button type="button" onclick="backToGroups()" class="text-gray-500 hover:text-gray-800 active:text-gray-900 flex items-center mr-3 py-2 pr-2 -ml-2 min-h-[var(--touch-min)] items-center">
-                    <svg class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                    Quay lại
+            <div class="flex items-center justify-between mb-4 relative min-h-[var(--touch-min)]">
+                <button type="button" onclick="backToGroups()" class="absolute left-0 text-[#9E9385] hover:text-[#C5A47E] flex items-center transition text-[11px] font-semibold uppercase tracking-widest min-h-[var(--touch-min)]">
+                    <svg class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                    Trở lại
                 </button>
-                <h3 id="selectedGroupTitle" class="font-semibold text-gray-800 flex-1 text-center pr-8">Khách Chú Rể</h3>
+                <h3 id="selectedGroupTitle" class="wedding-font text-2xl text-[#4A453F] italic font-medium absolute left-1/2 -translate-x-1/2 pointer-events-none">Khách Chú Rể</h3>
+                <span class="w-16"></span>
             </div>
-            
-            <div class="relative bg-white border border-gray-300 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[200px] h-[40vh] max-h-[280px]">
-                <div class="p-2 border-b flex-shrink-0">
-                    <input type="text" id="guestSearchInput" placeholder="Gõ tên để tìm nhanh..." class="w-full px-3 py-2.5 sm:py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500 text-base sm:text-sm" autocomplete="off">
+
+            <div class="guest-list-panel flex flex-col min-h-[200px] h-[40vh] max-h-[280px]">
+                <div class="p-3 border-b border-[#E8DCCB]/60 flex-shrink-0">
+                    <div class="guest-search-wrap flex items-center gap-2 px-3 py-2.5">
+                        <svg class="h-4 w-4 text-[#9E9385] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        <input type="text" id="guestSearchInput" placeholder="Nhập tên để tìm kiếm nhanh..." class="flex-1 bg-transparent text-gray-800 text-sm focus:outline-none placeholder:text-[#9E9385]" autocomplete="off">
+                    </div>
                 </div>
-                <ul id="guestListOptions" class="overflow-y-auto flex-1 p-2 space-y-1">
+                <ul id="guestListOptions" class="overflow-y-auto flex-1 p-0">
                     <!-- Danh sách khách render ở đây -->
                 </ul>
             </div>
@@ -235,16 +328,16 @@
     <!-- Map Section — desktop như cũ -->
     <section class="w-full px-3 sm:px-4 mb-8 sm:mb-10">
         <div class="map-container" id="mapContainer">
-            <!-- Stage & Aisle -->
+            <!-- Sân khấu và dòng chữ Sảnh Diamond -->
             <div class="stage">
-                <span class="font-bold text-sm">Sân Khấu</span>
-                <span class="text-[9px] text-gray-600">Sảnh Diamond</span>
+                <span class="wedding-font font-medium text-[#4A453F] tracking-[0.25em] text-[14px] uppercase">Sân Khấu</span>
+                <span class="text-[7.5px] text-[#9E9385] uppercase tracking-[0.1em] mt-1 font-medium">Sảnh Diamond</span>
             </div>
+            <!-- Lối đi chính giữa (net đứt) -->
             <div class="aisle"></div>
-
-            <!-- Bars -->
+            <!-- 2 Quầy Bar ở hai bên mép trái/phải -->
             <div class="bar-area" style="top: 45%; left: 7%;">BAR</div>
-            <div class="bar-area" style="top: 55%; left: 93%;">BAR</div>
+            <div class="bar-area" style="top: 59%; left: 93%;">BAR</div>
             <!-- Bàn render qua JS -->
         </div>
     </section>
@@ -537,10 +630,16 @@
         const mapContainer = document.getElementById('mapContainer');
         function renderTables() {
             mapContainer.innerHTML = `
-                <div class="stage"><span class="font-bold text-sm">Sân Khấu</span><span class="text-[9px] text-gray-600">Sảnh Diamond</span></div>
+                <!-- Sân khấu và dòng chữ Sảnh Diamond -->
+                <div class="stage">
+                    <span class="wedding-font font-medium text-[#4A453F] tracking-[0.25em] text-[14px] uppercase">Sân Khấu</span>
+                    <span class="text-[7.5px] text-[#9E9385] uppercase tracking-[0.1em] mt-1 font-medium">Sảnh Diamond</span>
+                </div>
+                <!-- Lối đi chính giữa (net đứt) -->
                 <div class="aisle"></div>
+                <!-- 2 Quầy Bar ở hai bên mép trái/phải -->
                 <div class="bar-area" style="top: 45%; left: 7%;">BAR</div>
-                <div class="bar-area" style="top: 55%; left: 93%;">BAR</div>
+                <div class="bar-area" style="top: 59%; left: 93%;">BAR</div>
             `;
             tablePositions.forEach(pos => {
                 const div = document.createElement('div');
@@ -590,14 +689,15 @@
             }
 
             if (filtered.length === 0) {
-                listContainer.innerHTML = `<li class="text-gray-500 text-sm text-center py-4">Không tìm thấy ai.</li>`;
+                listContainer.innerHTML = `<li class="text-[#9E9385] text-sm text-center py-8 px-4">Không tìm thấy ai.</li>`;
                 return;
             }
 
             filtered.forEach(g => {
                 const li = document.createElement('li');
-                li.className = 'guest-item px-3 py-2 border-b border-gray-100 rounded text-sm flex justify-between items-center';
-                li.innerHTML = `<span class="font-medium text-gray-700">${g.name}</span> <span class="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">Bàn ${g.table}</span>`;
+                li.className = 'guest-item px-4 py-3 flex justify-between items-center text-sm';
+                const tableLabel = String(g.table).trim();
+                li.innerHTML = `<span class="font-medium text-gray-700 text-[#4A453F]">${g.name}</span><span class="text-[11px] text-[#C5A47E] border border-[#C5A47E] bg-white px-3 py-1.5 rounded-lg uppercase tracking-widest font-bold">Bàn ${tableLabel}</span>`;
                 li.onclick = () => highlightTable(g);
                 listContainer.appendChild(li);
             });
@@ -869,10 +969,16 @@
             const container = document.getElementById('mapEditContainer');
             if (!container) return;
             container.innerHTML = `
-                <div class="stage"><span class="font-bold text-sm">Sân Khấu</span><span class="text-[9px] text-gray-600">Sảnh Diamond</span></div>
+                <!-- Sân khấu và dòng chữ Sảnh Diamond -->
+                <div class="stage">
+                    <span class="wedding-font font-medium text-[#4A453F] tracking-[0.25em] text-[14px] uppercase">Sân Khấu</span>
+                    <span class="text-[7.5px] text-[#9E9385] uppercase tracking-[0.1em] mt-1 font-medium">Sảnh Diamond</span>
+                </div>
+                <!-- Lối đi chính giữa (net đứt) -->
                 <div class="aisle"></div>
+                <!-- 2 Quầy Bar ở hai bên mép trái/phải -->
                 <div class="bar-area" style="top: 45%; left: 7%;">BAR</div>
-                <div class="bar-area" style="top: 55%; left: 93%;">BAR</div>
+                <div class="bar-area" style="top: 59%; left: 93%;">BAR</div>
             `;
             tablePositions.forEach(pos => {
                 const div = document.createElement('div');
