@@ -1,0 +1,33 @@
+# Sửa Firestore Rules để data lên Firebase
+
+Hiện tại Rules của bạn đang là **`allow read, write: if false;`** → **chặn mọi đọc/ghi**, nên app không ghi/đọc được Firestore.
+
+## Cách sửa
+
+1. Vào **Firebase Console** → project **Weddingmap** → **Firestore Database** → tab **Rules**.
+2. **Xóa** toàn bộ rules hiện tại và **dán** đoạn dưới đây (cho phép đọc/ghi collection `weddingMap`):
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /weddingMap/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+(Mặc định mọi path khác không match sẽ bị từ chối.)
+
+3. Bấm **Publish** (hoặc **Develop & Test** / **Xuất bản**).
+
+---
+
+**Giải thích ngắn:**
+
+- `match /weddingMap/{document=**}`: áp dụng cho collection `weddingMap` và mọi document bên trong (trong đó có document `data` chứa `guests` và `tablePositions`).
+- `allow read, write: if true;`: cho phép đọc và ghi (ai có link app đều dùng được — phù hợp dùng nội bộ, không đăng nhập).
+- Rule `match /{document=**}` với `if false` phía dưới giữ các collection khác vẫn bị khóa.
+
+Sau khi Publish, thử lại app: thêm/sửa khách hoặc sơ đồ bàn → kiểm tra tab **Data** trong Firestore xem document **weddingMap** > **data** đã có dữ liệu chưa.
