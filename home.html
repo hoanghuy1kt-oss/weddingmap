@@ -471,9 +471,9 @@
             </div>
             <!-- Lối đi chính giữa (net đứt) -->
             <div class="aisle"></div>
-            <!-- 2 Quầy Bar ở hai bên mép trái/phải -->
-            <div class="bar-area" style="top: 45%; left: 7%;">BAR</div>
-            <div class="bar-area" style="top: 59%; left: 93%;">BAR</div>
+            <!-- 2 Quầy Bar ở hai bên mép trái/phải (canh giữa khoảng trống đã chừa) -->
+            <div class="bar-area" style="top: 40%; left: 5%;">BAR</div>
+            <div class="bar-area" style="top: 64%; left: 95%;">BAR</div>
             <!-- Hiệu ứng lối vào (Entrance) -->
             <div class="entrance-indicator">
                 <span class="text-[8px] text-[#9E9385] uppercase tracking-[0.2em] font-semibold mb-0.5">Lối Vào</span>
@@ -638,7 +638,7 @@
                             </ul>
                         </div>
                         <p class="mt-2">
-                            <button type="button" onclick="resetTablePositions()" class="text-amber-600 text-xs hover:underline">Khôi phục 45 bàn mặc định</button>
+                            <button type="button" onclick="resetTablePositions()" class="text-amber-600 text-xs hover:underline">Khôi phục 49 bàn mặc định</button>
                         </p>
                     </div>
                 </div>
@@ -688,10 +688,23 @@
                 .catch(function(err) { console.warn('Firebase load failed', err); });
         }
 
+        // Chuẩn hóa dữ liệu khách trước khi gửi lên Firestore:
+        // - Không gửi các field có giá trị undefined (Firestore không cho phép)
+        // - Riêng subGroup: nếu không có thì bỏ hẳn field, UI sẽ hiểu là khách lẻ (không nhóm nhỏ)
+        function getGuestsForFirestore() {
+            return guests.map(function(g) {
+                var copy = Object.assign({}, g);
+                if (copy.subGroup === undefined) {
+                    delete copy.subGroup;
+                }
+                return copy;
+            });
+        }
+
         function saveGuestsToFirebase() {
             if (!firebaseDb) return;
             firebaseDb.collection('weddingMap').doc('data').set(
-                { guests: guests, tablePositions: tablePositions },
+                { guests: getGuestsForFirestore(), tablePositions: tablePositions },
                 { merge: true }
             ).then(function() { if (typeof console !== 'undefined' && console.log) console.log('[Firebase] Đã lưu khách lên cloud.'); })
             .catch(function(err) { console.warn('Firebase save guests failed', err); });
@@ -707,19 +720,31 @@
         }
 
         // 1. SƠ ĐỒ BÀN (động, lưu localStorage + Firebase nếu có)
+        // Sơ đồ mặc định 49 bàn, bố trí đúng layout mới (chừa khoảng trống cho BAR)
         const defaultTablePositions = [
-            { id: 1, x: 14, y: 22 }, { id: 2, x: 14, y: 30 }, { id: 3, x: 14, y: 38 },
-            { id: 4, x: 14, y: 52 }, { id: 5, x: 14, y: 60 }, { id: 6, x: 14, y: 68 }, { id: 7, x: 14, y: 76 },
-            { id: 8, x: 26, y: 26 }, { id: 9, x: 26, y: 34 }, { id: 10, x: 26, y: 42 },
-            { id: 11, x: 26, y: 52 }, { id: 12, x: 26, y: 60 }, { id: 13, x: 26, y: 68 }, { id: 14, x: 26, y: 76 },
-            { id: 15, x: 38, y: 22 }, { id: 16, x: 38, y: 30 }, { id: 17, x: 38, y: 38 }, { id: 18, x: 38, y: 46 },
-            { id: 19, x: 38, y: 54 }, { id: 20, x: 38, y: 62 }, { id: 21, x: 38, y: 70 }, { id: 22, x: 38, y: 78 },
-            { id: 23, x: 62, y: 22 }, { id: 24, x: 62, y: 30 }, { id: 25, x: 62, y: 38 }, { id: 26, x: 62, y: 46 },
-            { id: 27, x: 62, y: 54 }, { id: 28, x: 62, y: 62 }, { id: 29, x: 62, y: 70 }, { id: 30, x: 62, y: 78 },
-            { id: 31, x: 74, y: 26 }, { id: 32, x: 74, y: 34 }, { id: 33, x: 74, y: 42 }, { id: 34, x: 74, y: 50 },
-            { id: 35, x: 74, y: 58 }, { id: 36, x: 74, y: 68 }, { id: 37, x: 74, y: 76 },
-            { id: 38, x: 86, y: 22 }, { id: 39, x: 86, y: 30 }, { id: 40, x: 86, y: 38 }, { id: 41, x: 86, y: 46 },
-            { id: 42, x: 86, y: 54 }, { id: 43, x: 86, y: 64 }, { id: 44, x: 86, y: 72 }, { id: 45, x: 86, y: 80 }
+            // Cột 1 (Trái ngoài cùng - Khoảng trống BAR nằm giữa bàn 3 và 4)
+            { id: 1, x: 9, y: 16 }, { id: 2, x: 9, y: 24 }, { id: 3, x: 9, y: 32 },
+            { id: 4, x: 9, y: 48 }, { id: 5, x: 9, y: 56 }, { id: 6, x: 9, y: 64 }, { id: 7, x: 9, y: 72 }, { id: 8, x: 9, y: 80 },
+
+            // Cột 2 (Trái giữa - Khoảng trống đồng bộ với cột 1)
+            { id: 9, x: 23, y: 20 }, { id: 10, x: 23, y: 28 }, { id: 11, x: 23, y: 36 },
+            { id: 12, x: 23, y: 52 }, { id: 13, x: 23, y: 60 }, { id: 14, x: 23, y: 68 }, { id: 15, x: 23, y: 76 },
+
+            // Cột 3 (Trái trong cùng - Liền mạch dọc theo lối đi chính)
+            { id: 16, x: 37, y: 16 }, { id: 17, x: 37, y: 24 }, { id: 18, x: 37, y: 32 }, { id: 19, x: 37, y: 40 },
+            { id: 20, x: 37, y: 48 }, { id: 21, x: 37, y: 56 }, { id: 22, x: 37, y: 64 }, { id: 23, x: 37, y: 72 }, { id: 24, x: 37, y: 80 },
+
+            // Cột 4 (Phải trong cùng - Liền mạch dọc theo lối đi chính)
+            { id: 25, x: 63, y: 16 }, { id: 26, x: 63, y: 24 }, { id: 27, x: 63, y: 32 }, { id: 28, x: 63, y: 40 },
+            { id: 29, x: 63, y: 48 }, { id: 30, x: 63, y: 56 }, { id: 31, x: 63, y: 64 }, { id: 32, x: 63, y: 72 }, { id: 33, x: 63, y: 80 },
+
+            // Cột 5 (Phải giữa - Khoảng trống phía dưới)
+            { id: 34, x: 77, y: 20 }, { id: 35, x: 77, y: 28 }, { id: 36, x: 77, y: 36 }, { id: 37, x: 77, y: 44 },
+            { id: 38, x: 77, y: 52 }, { id: 39, x: 77, y: 60 }, { id: 40, x: 77, y: 76 }, { id: 41, x: 77, y: 84 },
+
+            // Cột 6 (Phải ngoài cùng - Khoảng trống BAR nằm giữa bàn 47 và 48)
+            { id: 42, x: 91, y: 16 }, { id: 43, x: 91, y: 24 }, { id: 44, x: 91, y: 32 }, { id: 45, x: 91, y: 40 },
+            { id: 46, x: 91, y: 48 }, { id: 47, x: 91, y: 56 }, { id: 48, x: 91, y: 72 }, { id: 49, x: 91, y: 80 }
         ];
         let tablePositions = [];
 
@@ -805,9 +830,9 @@
                 </div>
                 <!-- Lối đi chính giữa (net đứt) -->
                 <div class="aisle"></div>
-                <!-- 2 Quầy Bar ở hai bên mép trái/phải -->
-                <div class="bar-area" style="top: 45%; left: 7%;">BAR</div>
-                <div class="bar-area" style="top: 59%; left: 93%;">BAR</div>
+                <!-- 2 Quầy Bar ở hai bên mép trái/phải (canh giữa khoảng trống đã chừa) -->
+                <div class="bar-area" style="top: 40%; left: 5%;">BAR</div>
+                <div class="bar-area" style="top: 64%; left: 95%;">BAR</div>
                 <!-- Hiệu ứng lối vào (Entrance) -->
                 <div class="entrance-indicator">
                     <span class="text-[8px] text-[#9E9385] uppercase tracking-[0.2em] font-semibold mb-0.5">Lối Vào</span>
@@ -1221,7 +1246,8 @@
                     guests[index].group = group;
                     guests[index].table = table;
                     const subGroupVal = (document.getElementById('adminNewGuestSubGroup').value || '').trim();
-                    guests[index].subGroup = subGroupVal || undefined;
+                    // Lưu chuỗi rỗng thay vì undefined để Firestore không báo lỗi
+                    guests[index].subGroup = subGroupVal;
                     saveDataToLocal("Đã cập nhật thông tin thành công!");
                     showToast("Đã cập nhật thông tin thành công!");
                     // Xóa ô "Tìm nhanh" để danh sách hiển thị đủ, khách vừa sửa (tên mới) luôn thấy
@@ -1233,7 +1259,8 @@
             } else {
                 // Đang ở trạng thái Thêm mới (Add)
                 const subGroupVal = (document.getElementById('adminNewGuestSubGroup').value || '').trim();
-                guests.push({ id: generateId(), name, table, group, subGroup: subGroupVal || undefined });
+                // Nếu không có nhóm nhỏ thì lưu chuỗi rỗng
+                guests.push({ id: generateId(), name, table, group, subGroup: subGroupVal });
                 saveDataToLocal("Đã thêm khách thành công!");
                 showToast("Đã thêm khách thành công!");
             }
@@ -1319,9 +1346,9 @@
                 </div>
                 <!-- Lối đi chính giữa (net đứt) -->
                 <div class="aisle"></div>
-                <!-- 2 Quầy Bar ở hai bên mép trái/phải -->
-                <div class="bar-area" style="top: 45%; left: 7%;">BAR</div>
-                <div class="bar-area" style="top: 59%; left: 93%;">BAR</div>
+                <!-- 2 Quầy Bar ở hai bên mép trái/phải (canh giữa khoảng trống đã chừa) -->
+                <div class="bar-area" style="top: 40%; left: 5%;">BAR</div>
+                <div class="bar-area" style="top: 64%; left: 95%;">BAR</div>
                 <!-- Hiệu ứng lối vào (Entrance) -->
                 <div class="entrance-indicator">
                     <span class="text-[8px] text-[#9E9385] uppercase tracking-[0.2em] font-semibold mb-0.5">Lối Vào</span>
@@ -1506,14 +1533,14 @@
         }
 
         function resetTablePositions() {
-            if (!confirm('Khôi phục lại 45 bàn mặc định? Sơ đồ tùy chỉnh hiện tại sẽ bị thay thế.')) return;
+            if (!confirm('Khôi phục lại 49 bàn mặc định? Sơ đồ tùy chỉnh hiện tại sẽ bị thay thế.')) return;
             tablePositions = [...defaultTablePositions];
             saveTablePositions();
             renderTables();
             renderMapEdit();
             renderAdminTableList();
             const msgEl = document.getElementById('saveMsg');
-            msgEl.innerText = 'Đã khôi phục 45 bàn mặc định.';
+            msgEl.innerText = 'Đã khôi phục 49 bàn mặc định.';
             setTimeout(() => { msgEl.innerText = ''; }, 3000);
         }
 
@@ -1558,7 +1585,8 @@
                     if(name && hasNumber && group) {
                         const tableCheck = validateTableIds(table);
                         if (tableCheck.valid) {
-                            newGuests.push({ id: generateId(), name, table, group, subGroup: subGroup || undefined });
+                            // Lưu subGroup là chuỗi (có thể rỗng), không dùng undefined để tránh lỗi Firestore
+                            newGuests.push({ id: generateId(), name, table, group, subGroup });
                         } else {
                             errorCount++;
                         }
