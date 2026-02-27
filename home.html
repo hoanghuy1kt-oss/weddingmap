@@ -354,12 +354,44 @@
             80% { opacity: 0.4; }
             100% { opacity: 0; transform: translateY(-10vh) translateX(var(--drift)) scale(1.2); }
         }
+
+        /* Toast thông báo nhỏ sau khi thao tác */
+        #toastContainer {
+            position: fixed;
+            bottom: max(1rem, env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            pointer-events: none;
+        }
+        .toast-msg {
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            animation: toastIn 0.3s ease;
+            pointer-events: auto;
+        }
+        .toast-msg.success { background: #059669; color: #fff; }
+        .toast-msg.error { background: #dc2626; color: #fff; }
+        .toast-msg.info { background: #2563eb; color: #fff; }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col items-center pb-12 relative" style="padding-top: var(--safe-top, 0);">
 
     <!-- Container chứa hiệu ứng bụi vàng -->
     <div id="dust-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
+
+    <!-- Toast thông báo nhỏ (Lưu / Xóa / ... xong) -->
+    <div id="toastContainer"></div>
 
     <!-- Nút Setting ẩn góc phải -->
     <button type="button" onclick="openSettings()" class="absolute p-3 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded-full" style="top: max(1rem, var(--safe-top)); right: max(1rem, var(--safe-right)); min-width: var(--touch-min); min-height: var(--touch-min);">
@@ -481,7 +513,7 @@
             <div id="loginArea">
                 <p class="mb-2 text-sm text-gray-600">Vui lòng nhập mật khẩu để tiếp tục:</p>
                 <input type="password" id="adminPass" class="w-full border p-2 rounded mb-3" placeholder="Mật khẩu...">
-                <button onclick="checkPass()" class="w-full bg-blue-600 text-white py-2 rounded font-medium hover:bg-blue-700">Đăng Nhập</button>
+                <button type="button" onclick="checkPass()" class="w-full bg-blue-600 text-white py-2 rounded font-medium hover:bg-blue-700">Đăng Nhập</button>
                 <p id="loginError" class="text-red-500 text-sm mt-2 hidden">Sai mật khẩu!</p>
             </div>
 
@@ -516,9 +548,13 @@
                                     <input type="text" id="adminNewGuestTable" placeholder="VD: 1, 2" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-blue-500 focus:border-blue-500">
                                 </div>
                             </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-0.5">Nhóm nhỏ (tùy chọn)</label>
+                                <input type="text" id="adminNewGuestSubGroup" placeholder="VD: Bạn Cấp 3, Đồng nghiệp A" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-blue-500 focus:border-blue-500">
+                            </div>
                             <div class="flex gap-2 flex-wrap">
-                                <button id="adminSaveBtn" onclick="adminSaveGuest()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 whitespace-nowrap shadow-sm transition">Thêm</button>
-                                <button id="adminCancelBtn" onclick="adminCancelEdit()" class="hidden bg-gray-300 text-gray-700 px-3 py-2 rounded text-sm font-medium hover:bg-gray-400 whitespace-nowrap shadow-sm transition">Hủy</button>
+                                <button type="button" id="adminSaveBtn" onclick="adminSaveGuest()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 whitespace-nowrap shadow-sm transition">Thêm</button>
+                                <button type="button" id="adminCancelBtn" onclick="adminCancelEdit()" class="hidden bg-gray-300 text-gray-700 px-3 py-2 rounded text-sm font-medium hover:bg-gray-400 whitespace-nowrap shadow-sm transition">Hủy</button>
                             </div>
                         </div>
                     </div>
@@ -547,10 +583,10 @@
                 <div id="tabContentByExcel" class="hidden flex-1 flex flex-col min-h-0">
                     <div class="bg-blue-50 text-blue-800 text-xs p-3 rounded-lg mb-3">
                         <b>Hướng dẫn nhập danh sách hàng loạt:</b><br>
-                        1. Nhập mỗi dòng theo định dạng: <b>Tên Khách | Số Bàn | Nhóm</b>.<br>
-                        <i>(Ví dụ: Gia đình Bác Hai | 1 | Chú Rể)</i><br>
+                        1. Nhập mỗi dòng theo định dạng: <b>Tên Khách | Số Bàn | Nhóm [| Nhóm nhỏ]</b>.<br>
+                        <i>(Ví dụ: Gia đình Bác Hai | 1 | Chú Rể)</i> hoặc <i>Huy | 25 | Chú Rể | Bạn Cấp 3</i>.<br>
                         2. Cột Nhóm: Ghi <b>Chú Rể</b>, <b>Cô Dâu</b>, hoặc <b>Mẹ Thủy</b>.<br>
-                        3. Bạn có thể gõ trực tiếp hoặc Copy & Paste vào ô bên dưới.
+                        3. Cột <b>Nhóm nhỏ</b> (tùy chọn): Cùng nhóm nhỏ sẽ được gộp thành accordion và gộp bàn tự động (VD: Bạn Cấp 3 → Bàn 25, 26, 28).
                     </div>
                     <textarea id="excelPasteArea" class="w-full flex-1 border border-gray-300 rounded-lg p-2 text-sm font-mono whitespace-pre mb-3 min-h-[120px]" placeholder="Nhập dữ liệu vào đây...&#10;Ví dụ:&#10;Gia đình Bác Hai | 1 | Chú Rể&#10;Đồng nghiệp Công ty A | 2, 3 | Chú Rể"></textarea>
                     <div class="flex gap-2">
@@ -710,6 +746,20 @@
         let guests = [];
         let currentGroupFilter = '';
 
+        /** Hiển thị thông báo nhỏ (toast) khi thao tác xong. type: 'success' | 'error' | 'info' */
+        function showToast(message, type) {
+            type = type || 'success';
+            var container = document.getElementById('toastContainer');
+            if (!container) return;
+            var el = document.createElement('div');
+            el.className = 'toast-msg ' + type;
+            el.textContent = message;
+            container.appendChild(el);
+            setTimeout(function() {
+                if (el.parentNode) el.parentNode.removeChild(el);
+            }, 2800);
+        }
+
         // Hàm tạo ID ngẫu nhiên để xóa khách chính xác
         function generateId() {
             return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
@@ -719,6 +769,9 @@
             guests = [
                 { id: generateId(), name: 'Gia đình Bác Hai', table: '1', group: 'Chú Rể' },
                 { id: generateId(), name: 'Đồng nghiệp Công ty A', table: '2, 3', group: 'Chú Rể' },
+                { id: generateId(), name: 'Huy', table: '25', group: 'Chú Rể', subGroup: 'Bạn Cấp 3' },
+                { id: generateId(), name: 'Hoàng', table: '25', group: 'Chú Rể', subGroup: 'Bạn Cấp 3' },
+                { id: generateId(), name: 'Hường', table: '26, 28', group: 'Chú Rể', subGroup: 'Bạn Cấp 3' },
                 { id: generateId(), name: 'Bạn Đại học', table: '15, 16, 17', group: 'Cô Dâu' },
                 { id: generateId(), name: 'Gia đình Dì Ba', table: '18', group: 'Cô Dâu' },
                 { id: generateId(), name: 'Hội Bạn Cấp 3', table: '40', group: 'Mẹ Thủy' },
@@ -798,6 +851,12 @@
             return str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase() : "";
         }
 
+        function escapeHtml(str) {
+            if (str == null) return '';
+            var s = String(str);
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
         function selectGroup(group) {
             currentGroupFilter = group;
             document.getElementById('selectedGroupTitle').innerText = `Khách ${group}`;
@@ -817,24 +876,85 @@
         function renderGuestList(filterText = '') {
             listContainer.innerHTML = '';
             const normalizedFilter = removeDiacritics(filterText);
-            
-            // Lọc theo nhóm và text
+
             let filtered = guests.filter(g => g.group === currentGroupFilter);
             if (normalizedFilter) {
-                filtered = filtered.filter(g => removeDiacritics(g.name).includes(normalizedFilter));
+                filtered = filtered.filter(g => removeDiacritics(g.name).includes(normalizedFilter) || (g.subGroup && removeDiacritics(g.subGroup).includes(normalizedFilter)));
             }
 
             if (filtered.length === 0) {
-                listContainer.innerHTML = `<li class="text-[#9E9385] text-sm text-center py-8 px-4">Không tìm thấy ai.</li>`;
+                listContainer.innerHTML = '<li class="text-[#9E9385] text-sm text-center py-8 px-4">Không tìm thấy ai.</li>';
                 return;
             }
 
-            filtered.forEach(g => {
+            // 1. TÁCH DỮ LIỆU THÀNH KHÁCH LẺ VÀ KHÁCH THEO NHÓM (subGroup)
+            const grouped = {};
+            const flatList = [];
+            filtered.forEach(function(g) {
+                const sgName = (g.subGroup || '').trim();
+                if (sgName !== '') {
+                    if (!grouped[sgName]) grouped[sgName] = [];
+                    grouped[sgName].push(g);
+                } else {
+                    flatList.push(g);
+                }
+            });
+
+            const isSearching = normalizedFilter !== '';
+
+            // 2. RENDER CÁC NHÓM NHỎ (ACCORDION – GỘP BÀN TỰ ĐỘNG)
+            Object.keys(grouped).forEach(function(sgName) {
+                const groupId = 'sg-' + Math.random().toString(36).substr(2, 5);
+                // Gộp bàn tự động: lấy tất cả số bàn trong nhóm → loại trùng → sắp xếp (VD: "25, 26, 28")
+                const allTables = grouped[sgName].map(function(g) { return String(g.table); }).join(', ');
+                const matchNumbers = allTables.match(/\d+/g);
+                const uniqueTables = matchNumbers ? [...new Set(matchNumbers)].sort(function(a, b) { return parseInt(a, 10) - parseInt(b, 10); }).join(', ') : '';
+
+                const headerLi = document.createElement('li');
+                headerLi.className = 'cursor-pointer py-4 px-4 flex justify-between items-center border-b border-[#E8DCCB] hover:bg-[#FDFCF9] transition bg-[#FCFAf7] sticky top-0 z-10';
+                headerLi.onclick = function() {
+                    toggleAccordion(groupId);
+                    highlightGroupTables(sgName, uniqueTables);
+                };
+                headerLi.innerHTML =
+                    '<div class="flex items-center gap-2.5 flex-1 min-w-0 pr-2">' +
+                    '<div class="w-6 h-6 rounded-full bg-[#E8DCCB]/50 flex items-center justify-center flex-shrink-0">' +
+                    '<svg class="w-3.5 h-3.5 text-[#C5A47E]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg>' +
+                    '</div>' +
+                    '<span class="font-semibold text-[#4A453F] text-[15px] truncate">' + sgName + '</span>' +
+                    '</div>' +
+                    '<div class="flex items-center gap-2 flex-shrink-0">' +
+                    '<span class="text-[10px] text-[#C5A47E] border border-[#C5A47E]/50 bg-white px-2 py-1 rounded-md uppercase tracking-wider font-bold">Bàn ' + uniqueTables + '</span>' +
+                    '<svg id="arrow-' + groupId + '" class="w-4 h-4 text-[#C5A47E] transition-transform duration-200 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>' +
+                    '</div>';
+                listContainer.appendChild(headerLi);
+
+                const contentDiv = document.createElement('div');
+                contentDiv.id = groupId;
+                contentDiv.className = 'bg-white overflow-hidden transition-all duration-300 ' + (isSearching ? 'block' : 'hidden');
+                const subUl = document.createElement('ul');
+                grouped[sgName].forEach(function(g) {
+                    const li = document.createElement('li');
+                    li.className = 'cursor-pointer py-3.5 px-4 pl-12 flex justify-between items-center border-b border-[#E8DCCB]/40 last:border-0 hover:bg-[#FDFCF9] transition relative';
+                    li.innerHTML =
+                        '<div class="absolute left-[22px] top-0 bottom-0 w-[1px] bg-[#E8DCCB]/50"></div>' +
+                        '<div class="absolute left-[22px] top-1/2 w-4 h-[1px] bg-[#E8DCCB]/50"></div>' +
+                        '<span class="font-medium text-[#4A453F] text-[14px]">' + g.name + '</span> ' +
+                        '<span class="text-[10px] text-[#C5A47E] border border-[#E8DCCB] bg-[#FCFAf7] px-2.5 py-1 rounded-md uppercase tracking-widest font-bold">Bàn ' + String(g.table) + '</span>';
+                    li.onclick = function(ev) { ev.stopPropagation(); highlightTable(g); };
+                    subUl.appendChild(li);
+                });
+                contentDiv.appendChild(subUl);
+                listContainer.appendChild(contentDiv);
+            });
+
+            // 3. RENDER KHÁCH LẺ (không có subGroup)
+            flatList.forEach(function(g) {
                 const li = document.createElement('li');
                 li.className = 'guest-item px-4 py-3 flex justify-between items-center text-sm';
                 const tableLabel = String(g.table).trim();
-                li.innerHTML = `<span class="guest-item-name">${g.name}</span><span class="text-[11px] text-[#C5A47E] border border-[#C5A47E] bg-white px-3 py-1.5 rounded-lg uppercase tracking-widest font-bold">Bàn ${tableLabel}</span>`;
-                li.onclick = () => highlightTable(g);
+                li.innerHTML = '<span class="guest-item-name">' + g.name + '</span><span class="text-[11px] text-[#C5A47E] border border-[#C5A47E] bg-white px-3 py-1.5 rounded-lg uppercase tracking-widest font-bold">Bàn ' + tableLabel + '</span>';
+                li.onclick = function() { highlightTable(g); };
                 listContainer.appendChild(li);
             });
         }
@@ -846,6 +966,35 @@
 
         function clearHighlights() {
             document.querySelectorAll('.table-node').forEach(t => t.classList.remove('glow'));
+        }
+
+        // Biến dùng để đóng/mở danh sách nhóm nhỏ (Accordion)
+        window.toggleAccordion = function(groupId) {
+            const content = document.getElementById(groupId);
+            const arrow = document.getElementById('arrow-' + groupId);
+            if (content && arrow) {
+                if (content.classList.contains('hidden')) {
+                    content.classList.remove('hidden');
+                    arrow.classList.add('rotate-180');
+                } else {
+                    content.classList.add('hidden');
+                    arrow.classList.remove('rotate-180');
+                }
+            }
+        };
+
+        /** Sáng cùng lúc nhiều bàn từ chuỗi "25, 26, 28" (dùng khi bấm tiêu đề nhóm) */
+        function highlightGroupTables(sgName, uniqueTablesStr) {
+            clearHighlights();
+            const tableNumbers = (uniqueTablesStr || '').match(/\d+/g);
+            if (tableNumbers && tableNumbers.length > 0) {
+                tableNumbers.forEach(function(tId) {
+                    const tableEl = document.getElementById('table-' + tId);
+                    if (tableEl) tableEl.classList.add('glow');
+                });
+                searchMsg.innerHTML = 'Đã tìm thấy khu vực bàn của nhóm <b>' + (sgName || '') + '</b>';
+                document.getElementById('mapContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
 
         function highlightTable(guest) {
@@ -908,11 +1057,17 @@
             document.getElementById('loginError').classList.add('hidden');
             document.getElementById('saveMsg').innerText = '';
             
-            // Nếu đã có data, hiển thị dưới dạng Text dùng dấu | để dễ copy/sửa lại
-            if(guests.length > 0) {
-                let text = guests.map(g => `${g.name} | ${g.table} | ${g.group}`).join('\n');
-                textarea.value = text;
-            }
+            // Luôn đồng bộ nội dung ô Excel từ danh sách khách hiện tại
+            syncExcelTextareaFromGuests();
+        }
+
+        /** Cập nhật ô text (tab Excel) theo mảng guests hiện tại — gọi sau khi Thêm/Sửa/Xóa hoặc khi chuyển sang tab Excel */
+        function syncExcelTextareaFromGuests() {
+            if (!textarea) return;
+            var text = guests.length > 0
+                ? guests.map(function(g) { return g.name + ' | ' + g.table + ' | ' + g.group + (g.subGroup ? ' | ' + g.subGroup : ''); }).join('\n')
+                : '';
+            textarea.value = text;
         }
 
         function closeSettings() {
@@ -958,6 +1113,7 @@
             } else if (tab === 'byExcel') {
                 tab2.classList.remove('hidden');
                 btn2.className = activeCls;
+                syncExcelTextareaFromGuests(); // Luôn hiển thị đúng dữ liệu khi chuyển sang tab Excel
             } else if (tab === 'tables') {
                 tab3.classList.remove('hidden');
                 btn3.className = activeCls;
@@ -967,8 +1123,8 @@
         }
 
         function exportGuestsToExcel() {
-            const headers = ['STT', 'Tên khách mời', 'Nhóm', 'Số bàn'];
-            const rows = guests.map((g, i) => [i + 1, g.name, g.group, g.table]);
+            const headers = ['STT', 'Tên khách mời', 'Nhóm', 'Số bàn', 'Nhóm nhỏ'];
+            const rows = guests.map((g, i) => [i + 1, g.name, g.group, g.table, g.subGroup || '']);
             const escapeCsv = (v) => '"' + String(v).replace(/"/g, '""') + '"';
             const csvLines = [headers.map(escapeCsv).join(','), ...rows.map(r => r.map(escapeCsv).join(','))];
             const BOM = '\uFEFF';
@@ -979,6 +1135,7 @@
             a.download = 'danh-sach-khach-moi.csv';
             a.click();
             URL.revokeObjectURL(a.href);
+            showToast("Đã xuất file Excel!");
         }
 
         function renderAdminAllGuests() {
@@ -986,10 +1143,15 @@
             const searchText = removeDiacritics(document.getElementById('adminSearchList').value);
             listEl.innerHTML = '';
             
-            // Lọc danh sách nếu có nhập ô tìm kiếm
+            // Lọc danh sách nếu có nhập ô tìm kiếm (tên, nhóm, bàn, nhóm nhỏ)
             let displayGuests = guests;
             if (searchText) {
-                displayGuests = guests.filter(g => removeDiacritics(g.name).includes(searchText) || removeDiacritics(g.group).includes(searchText) || String(g.table).includes(searchText));
+                displayGuests = guests.filter(g =>
+                    removeDiacritics(g.name).includes(searchText) ||
+                    removeDiacritics(g.group).includes(searchText) ||
+                    String(g.table).includes(searchText) ||
+                    (g.subGroup && removeDiacritics(g.subGroup).includes(searchText))
+                );
             }
 
             document.getElementById('adminTotalGuestCount').innerText = displayGuests.length;
@@ -1003,25 +1165,29 @@
             [...displayGuests].reverse().forEach(g => {
                 const li = document.createElement('li');
                 li.className = "flex justify-between items-center p-3 hover:bg-gray-50 transition";
+                var guestIdAttr = String(g.id).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 li.innerHTML = `
                     <div class="flex flex-col">
-                        <span class="text-sm font-medium text-gray-800">${g.name}</span>
+                        <span class="text-sm font-medium text-gray-800">${escapeHtml(g.name)}</span>
                         <div class="flex gap-2 mt-1.5">
-                            <span class="text-[10px] text-blue-700 bg-blue-100 border border-blue-200 px-1.5 py-0.5 rounded font-medium">${g.group}</span>
-                            <span class="text-[10px] text-green-700 bg-green-100 border border-green-200 px-1.5 py-0.5 rounded font-medium">Bàn: ${g.table}</span>
+                            <span class="text-[10px] text-blue-700 bg-blue-100 border border-blue-200 px-1.5 py-0.5 rounded font-medium">${escapeHtml(g.group)}</span>
+                            <span class="text-[10px] text-green-700 bg-green-100 border border-green-200 px-1.5 py-0.5 rounded font-medium">Bàn: ${escapeHtml(String(g.table))}</span>
+                            ${g.subGroup ? '<span class="text-[10px] text-amber-700 bg-amber-100 border border-amber-200 px-1.5 py-0.5 rounded font-medium">' + escapeHtml(g.subGroup) + '</span>' : ''}
                         </div>
                     </div>
                     <div class="flex gap-1.5">
-                        <button onclick="adminEditGuest('${g.id}')" class="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-1.5 rounded transition" title="Sửa thông tin">
+                        <button type="button" data-action="edit" data-guest-id="${guestIdAttr}" class="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-1.5 rounded transition" title="Sửa thông tin">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                         </button>
-                        <button onclick="adminDeleteGuest('${g.id}')" class="text-red-500 hover:text-red-700 hover:bg-red-100 p-1.5 rounded transition" title="Xóa khách này">
+                        <button type="button" data-action="delete" data-guest-id="${guestIdAttr}" class="text-red-500 hover:text-red-700 hover:bg-red-100 p-1.5 rounded transition" title="Xóa khách này">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
                     </div>
                 `;
                 listEl.appendChild(li);
             });
+            // Ép trình duyệt reflow để danh sách cập nhật hiển thị ngay (tránh phải chuyển tab mới thấy thay đổi)
+            void listEl.offsetHeight;
         }
 
         /** Kiểm tra chuỗi số bàn (VD: "1", "1, 2", "15, 16") — chỉ chấp nhận số bàn có trên sơ đồ */
@@ -1033,10 +1199,10 @@
         }
 
         function adminSaveGuest() {
-            const idInput = document.getElementById('adminEditGuestId').value;
-            const name = document.getElementById('adminNewGuestName').value.trim();
+            const idInput = (document.getElementById('adminEditGuestId').value || '').trim();
+            const name = (document.getElementById('adminNewGuestName').value || '').trim();
             const group = document.getElementById('adminNewGuestGroup').value;
-            const table = document.getElementById('adminNewGuestTable').value.trim();
+            const table = (document.getElementById('adminNewGuestTable').value || '').trim();
 
             if(!name || !table) { alert("Vui lòng nhập Tên và Số bàn!"); return; }
 
@@ -1048,27 +1214,44 @@
             }
 
             if (idInput) {
-                // Đang ở trạng thái Sửa (Update)
-                const index = guests.findIndex(g => g.id === idInput);
+                // Đang ở trạng thái Sửa (Update) — tìm đúng khách theo id (so sánh chuỗi)
+                const index = guests.findIndex(g => String(g.id) === String(idInput));
                 if (index !== -1) {
                     guests[index].name = name;
                     guests[index].group = group;
                     guests[index].table = table;
+                    const subGroupVal = (document.getElementById('adminNewGuestSubGroup').value || '').trim();
+                    guests[index].subGroup = subGroupVal || undefined;
                     saveDataToLocal("Đã cập nhật thông tin thành công!");
+                    showToast("Đã cập nhật thông tin thành công!");
+                    // Xóa ô "Tìm nhanh" để danh sách hiển thị đủ, khách vừa sửa (tên mới) luôn thấy
+                    var searchEl = document.getElementById('adminSearchList');
+                    if (searchEl) searchEl.value = '';
+                } else {
+                    showToast("Không tìm thấy khách để cập nhật. Thử làm mới trang.", "error");
                 }
             } else {
                 // Đang ở trạng thái Thêm mới (Add)
-                guests.push({ id: generateId(), name, table, group });
+                const subGroupVal = (document.getElementById('adminNewGuestSubGroup').value || '').trim();
+                guests.push({ id: generateId(), name, table, group, subGroup: subGroupVal || undefined });
                 saveDataToLocal("Đã thêm khách thành công!");
+                showToast("Đã thêm khách thành công!");
             }
             
             adminCancelEdit(); // Reset form
-            renderAdminAllGuests(); // Cập nhật danh sách
+            // Cập nhật danh sách ngay — ép đọc lại ô tìm kiếm (đã xóa ở trên khi đang Sửa) và vẽ lại
+            var searchInputAdmin = document.getElementById('adminSearchList');
+            if (searchInputAdmin) searchInputAdmin.value = '';
+            renderAdminAllGuests();
+            // Ép repaint danh sách trong frame kế tiếp (tránh trường hợp tab Khách chưa repaint sau khi sửa tên/nhóm nhỏ)
+            requestAnimationFrame(function() { renderAdminAllGuests(); });
+            syncExcelTextareaFromGuests(); // Đồng bộ ô Excel để tab Excel luôn đúng
             if(!step2.classList.contains('hidden')) renderGuestList(searchInput.value); // Cập nhật màn search ngoài
         }
 
         function adminEditGuest(guestId) {
-            const guest = guests.find(g => g.id === guestId);
+            var id = (guestId && String(guestId).trim()) || '';
+            var guest = guests.find(g => String(g.id) === id);
             if (!guest) return;
 
             // Đổ dữ liệu lên form
@@ -1077,6 +1260,7 @@
             document.getElementById('adminNewGuestName').value = guest.name;
             document.getElementById('adminNewGuestGroup').value = guest.group;
             document.getElementById('adminNewGuestTable').value = guest.table;
+            document.getElementById('adminNewGuestSubGroup').value = guest.subGroup || '';
 
             // Đổi giao diện nút
             const saveBtn = document.getElementById('adminSaveBtn');
@@ -1097,6 +1281,7 @@
             document.getElementById('adminNewGuestName').value = "";
             document.getElementById('adminNewGuestGroup').value = "Chú Rể";
             document.getElementById('adminNewGuestTable').value = "";
+            document.getElementById('adminNewGuestSubGroup').value = "";
 
             // Reset nút
             const saveBtn = document.getElementById('adminSaveBtn');
@@ -1109,10 +1294,12 @@
 
         function adminDeleteGuest(guestId) {
             if(confirm("Bạn có chắc chắn muốn xóa khách này khỏi sơ đồ không?")) {
-                guests = guests.filter(g => g.id !== guestId);
+                var id = (guestId && String(guestId).trim()) || '';
+                guests = guests.filter(g => String(g.id) !== id);
                 saveDataToLocal("Đã xóa khách khỏi danh sách!");
+                showToast("Đã xóa khách khỏi danh sách!");
                 renderAdminAllGuests();
-                
+                syncExcelTextareaFromGuests(); // Đồng bộ ô Excel
                 if(!step2.classList.contains('hidden')) renderGuestList(searchInput.value);
             }
         }
@@ -1363,6 +1550,7 @@
                     const name = cols[0];
                     const table = cols[1]; // Giữ nguyên dạng chuỗi để hỗ trợ đa bàn
                     const group = cols[2];
+                    const subGroup = cols.length >= 4 ? cols[3].trim() : '';
                     
                     // Kiểm tra xem cột bàn có chứa ít nhất 1 chữ số nào không
                     const hasNumber = /\d/.test(table);
@@ -1370,7 +1558,7 @@
                     if(name && hasNumber && group) {
                         const tableCheck = validateTableIds(table);
                         if (tableCheck.valid) {
-                            newGuests.push({ id: generateId(), name, table, group });
+                            newGuests.push({ id: generateId(), name, table, group, subGroup: subGroup || undefined });
                         } else {
                             errorCount++;
                         }
@@ -1385,10 +1573,11 @@
             if (newGuests.length > 0) {
                 guests = newGuests;
                 saveDataToLocal(`Đã lưu thành công ${newGuests.length} khách! (${errorCount} dòng lỗi)`);
+                showToast("Đã lưu " + newGuests.length + " khách từ Excel!");
                 
-                // Cập nhật lại UI nếu đang mở
+                // Cập nhật danh sách tab Khách và màn tra cứu ngoài (chiều Excel → Form)
+                renderAdminAllGuests();
                 if(!step2.classList.contains('hidden')) renderGuestList(searchInput.value);
-                if(!document.getElementById('tabContentByTable').classList.contains('hidden')) renderAdminAllGuests();
                 
                 setTimeout(() => { closeSettings(); }, 2000);
             } else {
@@ -1412,7 +1601,9 @@
             guests = [];
             localStorage.setItem('weddingGuests', JSON.stringify(guests));
             if (useFirebase) saveGuestsToFirebase();
+            showToast("Đã xóa toàn bộ khách.");
             renderAdminAllGuests();
+            syncExcelTextareaFromGuests(); // Ô Excel trống
             if (!step2.classList.contains('hidden')) renderGuestList(searchInput.value);
             var msgEl = document.getElementById('saveMsg');
             if (msgEl) {
@@ -1448,6 +1639,18 @@
             createGoldDust();
             loadTablePositions();
             loadData();
+            // Event delegation: Sửa / Xóa khách trong danh sách (tránh lỗi khi id có ký tự đặc biệt)
+            var adminList = document.getElementById('adminAllGuestList');
+            if (adminList) {
+                adminList.addEventListener('click', function(e) {
+                    var btn = e.target.closest('button[data-action][data-guest-id]');
+                    if (!btn) return;
+                    e.preventDefault();
+                    var id = btn.getAttribute('data-guest-id');
+                    if (btn.getAttribute('data-action') === 'edit') adminEditGuest(id);
+                    else if (btn.getAttribute('data-action') === 'delete') adminDeleteGuest(id);
+                });
+            }
             if (useFirebase) {
                 loadFromFirebase().then(function() {
                     renderTables();
