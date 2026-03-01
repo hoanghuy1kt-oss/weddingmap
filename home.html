@@ -936,7 +936,7 @@
                 const uniqueTables = matchNumbers ? [...new Set(matchNumbers)].sort(function(a, b) { return parseInt(a, 10) - parseInt(b, 10); }).join(', ') : '';
 
                 const headerLi = document.createElement('li');
-                headerLi.className = 'cursor-pointer py-4 px-4 flex justify-between items-center border-b border-[#E8DCCB] hover:bg-[#FDFCF9] transition bg-[#FCFAf7] sticky top-0 z-10';
+                headerLi.className = 'cursor-pointer py-4 px-4 flex justify-between items-center border-b border-[#E8DCCB] hover:bg-[#FDFCF9] transition bg-[#FCFAf7]';
                 headerLi.onclick = function() {
                     toggleAccordion(groupId);
                     highlightGroupTables(sgName, uniqueTables);
@@ -950,6 +950,7 @@
                     '</div>' +
                     '<div class="flex items-center gap-2 flex-shrink-0">' +
                     '<span class="text-[10px] text-[#C5A47E] border border-[#C5A47E]/50 bg-white px-2 py-1 rounded-md uppercase tracking-wider font-bold">Bàn ' + uniqueTables + '</span>' +
+                    '<div class="cursor-pointer p-1 -m-1 flex items-center justify-center" onclick="event.stopPropagation(); toggleAccordion(\'' + groupId + '\');" title="Mở/đóng danh sách">' +
                     '<svg id="arrow-' + groupId + '" class="w-4 h-4 text-[#C5A47E] transition-transform duration-200 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>' +
                     '</div>';
                 listContainer.appendChild(headerLi);
