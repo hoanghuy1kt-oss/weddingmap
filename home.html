@@ -51,7 +51,7 @@
                 font-size: 10px; 
             }
             .stage span:first-child { font-size: 0.7rem !important; }
-            .bar-area { font-size: 8px; }
+            .bar-area, .wc-area { font-size: 8px; }
         }
 
         /* Sơ đồ — viền mỏng vuông vức */
@@ -129,6 +129,22 @@
             position: absolute;
             border: 1px solid #E8DCCB;
             background-color: transparent;
+            font-size: 8px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 7%;
+            height: 4%;
+            transform: translate(-50%, -50%);
+            letter-spacing: 1px;
+            color: var(--gold-primary);
+        }
+        /* Khu vực WC (góc phải sơ đồ) */
+        .wc-area {
+            position: absolute;
+            border: 1px solid #E8DCCB;
+            background-color: rgba(255,255,255,0.9);
             font-size: 8px;
             font-weight: 600;
             display: flex;
@@ -310,7 +326,7 @@
             background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
             overflow: hidden; touch-action: none; user-select: none;
         }
-        .map-edit-container .stage, .map-edit-container .aisle, .map-edit-container .bar-area { pointer-events: none; }
+        .map-edit-container .stage, .map-edit-container .aisle, .map-edit-container .bar-area, .map-edit-container .wc-area { pointer-events: none; }
         .table-node-draggable {
             cursor: grab; z-index: 15;
         }
@@ -353,6 +369,35 @@
             20% { opacity: 0.6; }
             80% { opacity: 0.4; }
             100% { opacity: 0; transform: translateY(-10vh) translateX(var(--drift)) scale(1.2); }
+        }
+
+        /* Hiệu ứng trái tim bay lên (lâu lâu xuất hiện) */
+        .heart-float {
+            position: absolute;
+            bottom: -20px;
+            pointer-events: none;
+            font-size: var(--heart-size, 22px);
+            color: var(--gold);
+            opacity: 0;
+            animation: heartFloatUp var(--heart-duration) ease-out forwards;
+            text-shadow: 0 0 8px rgba(197, 160, 89, 0.4);
+        }
+        .heart-float::before { content: '♥'; }
+        @keyframes heartFloatUp {
+            0% {
+                opacity: 0;
+                transform: translateY(0) translateX(0) scale(0.6);
+            }
+            15% {
+                opacity: 0.9;
+            }
+            85% {
+                opacity: 0.7;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100vh) translateX(var(--heart-drift, 0)) scale(1);
+            }
         }
 
         /* Toast thông báo nhỏ sau khi thao tác */
@@ -474,6 +519,7 @@
             <!-- 2 Quầy Bar ở hai bên mép trái/phải (canh giữa khoảng trống đã chừa) -->
             <div class="bar-area" style="top: 40%; left: 5%;">BAR</div>
             <div class="bar-area" style="top: 64%; left: 95%;">BAR</div>
+            <div class="wc-area" style="top: 5%; left: 95%;">WC</div>
             <!-- Hiệu ứng lối vào (Entrance) -->
             <div class="entrance-indicator">
                 <span class="text-[8px] text-[#9E9385] uppercase tracking-[0.2em] font-semibold mb-0.5">Lối Vào</span>
@@ -841,6 +887,7 @@
                 <!-- 2 Quầy Bar ở hai bên mép trái/phải (canh giữa khoảng trống đã chừa) -->
                 <div class="bar-area" style="top: 40%; left: 5%;">BAR</div>
                 <div class="bar-area" style="top: 64%; left: 95%;">BAR</div>
+                <div class="wc-area" style="top: 5%; left: 95%;">WC</div>
                 <!-- Hiệu ứng lối vào (Entrance) -->
                 <div class="entrance-indicator">
                     <span class="text-[8px] text-[#9E9385] uppercase tracking-[0.2em] font-semibold mb-0.5">Lối Vào</span>
@@ -1378,6 +1425,7 @@
                 <!-- 2 Quầy Bar ở hai bên mép trái/phải (canh giữa khoảng trống đã chừa) -->
                 <div class="bar-area" style="top: 40%; left: 5%;">BAR</div>
                 <div class="bar-area" style="top: 64%; left: 95%;">BAR</div>
+                <div class="wc-area" style="top: 5%; left: 95%;">WC</div>
                 <!-- Hiệu ứng lối vào (Entrance) -->
                 <div class="entrance-indicator">
                     <span class="text-[8px] text-[#9E9385] uppercase tracking-[0.2em] font-semibold mb-0.5">Lối Vào</span>
@@ -1694,8 +1742,35 @@
             }
         }
 
+        /** Lâu lâu spawn vài trái tim bay lên từ dưới màn hình */
+        function spawnFloatingHearts() {
+            var container = document.getElementById('dust-container');
+            if (!container) return;
+            var count = Math.floor(Math.random() * 2) + 1;
+            for (var i = 0; i < count; i++) {
+                (function () {
+                    var heart = document.createElement('span');
+                    heart.className = 'heart-float';
+                    heart.style.left = (Math.random() * 80 + 10) + '%';
+                    heart.style.setProperty('--heart-size', (Math.random() * 10 + 18) + 'px');
+                    heart.style.setProperty('--heart-duration', (Math.random() * 2 + 4) + 's');
+                    heart.style.setProperty('--heart-drift', (Math.random() - 0.5) * 60 + 'px');
+                    container.appendChild(heart);
+                    setTimeout(function () {
+                        if (heart.parentNode) heart.parentNode.removeChild(heart);
+                    }, 5500);
+                })();
+            }
+        }
+
+        function startHeartFloatInterval() {
+            spawnFloatingHearts();
+            setInterval(spawnFloatingHearts, 6000 + Math.random() * 9000);
+        }
+
         window.onload = function() {
             createGoldDust();
+            startHeartFloatInterval();
             loadTablePositions();
             loadData();
             // Event delegation: Sửa / Xóa khách trong danh sách (tránh lỗi khi id có ký tự đặc biệt)
